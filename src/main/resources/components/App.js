@@ -4,8 +4,11 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
+import Card from 'react-bootstrap/Card';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 
-const App = () => {
+const App = ({ photosString }) => {
     return (
         <SSRProvider>
             <Navbar expand="lg" className="bg-body-tertiary">
@@ -31,6 +34,22 @@ const App = () => {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
+
+            <Container>
+                <h2 className="mb-4">Photo Gallery</h2>
+                <Row xs={1} md={3} className="g-4">
+                    {photosString.map((photo) => (
+                        <Col key={photo.id}>
+                            <Card>
+                                <Card.Img variant="top" src={photo.thumbnailUrl} alt={photo.title} />
+                                <Card.Body>
+                                    <Card.Title>{photo.title}</Card.Title>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    ))}
+                </Row>
+            </Container>
         </SSRProvider>
     );
 };

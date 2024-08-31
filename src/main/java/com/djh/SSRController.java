@@ -2,6 +2,8 @@ package com.djh;
 
 import com.djh.postcode.Postcode;
 import com.djh.postcode.PostcodeService;
+import com.djh.representation.Photo;
+import com.djh.service.PhotoRetrievalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.graalvm.polyglot.Context;
@@ -29,13 +31,15 @@ public class SSRController {
 
     private static final Logger log = LoggerFactory.getLogger(SSRController.class);
 
+    private final PhotoRetrievalService photoRetrievalService;
     private final PostcodeService postcodeService;
     private final ObjectMapper objectMapper;
 
     // Shared Context for GraalVM
     private Context context;
 
-    public SSRController(PostcodeService postcodeService, ObjectMapper objectMapper) {
+    public SSRController(PhotoRetrievalService photoRetrievalService, PostcodeService postcodeService, ObjectMapper objectMapper) {
+        this.photoRetrievalService = photoRetrievalService;
         this.postcodeService = postcodeService;
         this.objectMapper = objectMapper;
     }
@@ -60,10 +64,18 @@ public class SSRController {
 
     @GetMapping("/{path:(?!.*.js|.*.css|.*.jpg).*$}")
     public String render(Model model, HttpServletRequest request) {
+        List<Photo> photos = photoRetrievalService.retrieveAllPhotos();
+
         try {
-            // JavaScript code to import the renderToString function and call it
+            // Convert the list of photos to JSON
+            ObjectMapper objectMapper = new ObjectMapper();
+            String photosJson = objectMapper.writeValueAsString(photos);
+
+            model.addAttribute("photos", photosJson);
+
+            // JavaScript code to import the renderToString function and call it with the photos data
             String src = "import { renderToString } from './src/main/resources/foo.bundle.mjs';" +
-                    "const result = renderToString(); result;"; // Capture the result
+                    "const result = renderToString({ photos: " + photosJson + " }); result;";
 
             // Execute the JavaScript code and get the result using the shared context
             Value result = context.eval(Source.newBuilder("js", src, "test.mjs").build());
