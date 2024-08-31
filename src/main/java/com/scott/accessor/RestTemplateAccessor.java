@@ -1,4 +1,4 @@
-package com.djh.accessor;
+package com.scott.accessor;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;

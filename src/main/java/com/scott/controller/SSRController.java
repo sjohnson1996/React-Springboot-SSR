@@ -1,9 +1,9 @@
-package com.djh.controller;
+package com.scott.controller;
 
-import com.djh.representation.Photo;
-import com.djh.service.PhotoRetrievalService;
+import com.scott.accessor.GraalContextAccessor;
+import com.scott.representation.Photo;
+import com.scott.service.PhotoRetrievalService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
@@ -12,9 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import javax.annotation.PostConstruct;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 @Controller
@@ -23,32 +20,17 @@ public class SSRController {
     private static final Logger log = LoggerFactory.getLogger(SSRController.class);
 
     private final PhotoRetrievalService photoRetrievalService;
+    private final GraalContextAccessor graalContextAccessor;
     private final ObjectMapper objectMapper;
 
-    // Shared Context for GraalVM
-    private Context context;
-
-    public SSRController(PhotoRetrievalService photoRetrievalService, ObjectMapper objectMapper) {
+    public SSRController(
+            PhotoRetrievalService photoRetrievalService,
+            GraalContextAccessor graalContextAccessor,
+            ObjectMapper objectMapper
+    ) {
         this.photoRetrievalService = photoRetrievalService;
+        this.graalContextAccessor = graalContextAccessor;
         this.objectMapper = objectMapper;
-    }
-
-    // Initialize the Context and load polyfills when the controller is created
-    @PostConstruct
-    public void initializeContext() {
-        try {
-            // Initialize the GraalVM context with desired options
-            context = Context.newBuilder("js")
-                    .allowIO(true)
-                    .allowAllAccess(true) // Allow access to all host classes (if needed)
-                    .build();
-
-            // Load and evaluate the polyfills script once
-            String polyfillsSrc = Files.readString(Paths.get("./src/main/resources/build/webEncodingPolyfill.bundle.mjs"));
-            context.eval(Source.newBuilder("js", polyfillsSrc, "polyfills.js").build());
-        } catch (Exception e) {
-            log.error("Failed to initialize GraalVM context", e);
-        }
     }
 
     @GetMapping("/{path:(?!.*.js|.*.css|.*.jpg).*$}")
@@ -65,7 +47,9 @@ public class SSRController {
                     "const result = renderPhotoGallery({ photos: " + photosJson + " }); result;";
 
             // Execute the JavaScript code and get the result using the shared context
-            Value result = context.eval(Source.newBuilder("js", src, "test.mjs").build());
+            Value result = graalContextAccessor
+                    .getJavascriptContext()
+                    .eval(Source.newBuilder("js", src, "test.mjs").build());
 
             // Check if the result is a string and add it to the model
             if (result.isString()) {

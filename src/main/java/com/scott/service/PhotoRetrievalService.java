@@ -1,7 +1,7 @@
-package com.djh.service;
+package com.scott.service;
 
-import com.djh.accessor.RestTemplateAccessor;
-import com.djh.representation.Photo;
+import com.scott.accessor.RestTemplateAccessor;
+import com.scott.representation.Photo;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;

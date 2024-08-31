@@ -1,4 +1,4 @@
-package com.djh.representation;
+package com.scott.representation;
 
 public class Photo {
     private int id;

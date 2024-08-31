@@ -1,4 +1,4 @@
-package com.djh;
+package com.scott;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
