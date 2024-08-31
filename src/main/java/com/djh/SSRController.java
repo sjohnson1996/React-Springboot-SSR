@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -31,39 +32,48 @@ public class SSRController {
     private final PostcodeService postcodeService;
     private final ObjectMapper objectMapper;
 
+    // Shared Context for GraalVM
+    private Context context;
+
     public SSRController(PostcodeService postcodeService, ObjectMapper objectMapper) {
         this.postcodeService = postcodeService;
         this.objectMapper = objectMapper;
     }
 
+    // Initialize the Context and load polyfills when the controller is created
+    @PostConstruct
+    public void initializeContext() {
+        try {
+            // Initialize the GraalVM context with desired options
+            context = Context.newBuilder("js")
+                    .allowIO(true)
+                    .allowAllAccess(true) // Allow access to all host classes (if needed)
+                    .build();
+
+            // Load and evaluate the polyfills script once
+            String polyfillsSrc = Files.readString(Paths.get("./src/main/resources/webEncodingPolyfill.bundle.mjs"));
+            context.eval(Source.newBuilder("js", polyfillsSrc, "polyfills.js").build());
+        } catch (Exception e) {
+            log.error("Failed to initialize GraalVM context", e);
+        }
+    }
+
     @GetMapping("/{path:(?!.*.js|.*.css|.*.jpg).*$}")
     public String render(Model model, HttpServletRequest request) {
         try {
-            String polyfillsSrc = Files.readString(Paths.get("./src/main/resources/webEncodingPolyfill.bundle.mjs"));
-
             // JavaScript code to import the renderToString function and call it
             String src = "import { renderToString } from './src/main/resources/foo.bundle.mjs';" +
                     "const result = renderToString(); result;"; // Capture the result
 
-            // Create a GraalVM context allowing IO operations
-            try (Context cx = Context.newBuilder("js")
-                    .allowIO(true)
-                    .allowAllAccess(true) // Allow access to all host classes (if needed)
-                    .build()) {
+            // Execute the JavaScript code and get the result using the shared context
+            Value result = context.eval(Source.newBuilder("js", src, "test.mjs").build());
 
-                // Evaluate the polyfills script first to set up the environment
-                cx.eval(Source.newBuilder("js", polyfillsSrc, "polyfills.js").build());
-
-                // Execute the JavaScript code and get the result
-                Value result = cx.eval(Source.newBuilder("js", src, "test.mjs").build());
-
-                // Check if the result is a string and add it to the model
-                if (result.isString()) {
-                    String renderedHtml = result.asString();
-                    model.addAttribute("renderedHtml", renderedHtml);
-                } else {
-                    log.error("Expected a string result, but got: {}", result);
-                }
+            // Check if the result is a string and add it to the model
+            if (result.isString()) {
+                String renderedHtml = result.asString();
+                model.addAttribute("renderedHtml", renderedHtml);
+            } else {
+                log.error("Expected a string result, but got: {}", result);
             }
         } catch (Exception e) {
             log.error("Error executing script", e);
@@ -76,7 +86,6 @@ public class SSRController {
     }
 
     private void addCurrentPath(Model model, HttpServletRequest request) {
-
         String path = request.getServletPath();
         if (request.getServletPath().equals("/index.html")) {
             path = "/";
@@ -89,7 +98,6 @@ public class SSRController {
     }
 
     private void addServerSideContent(Model model) {
-
         String initialPostcodeQuery = "ST3";
         List<Postcode> postcodes = postcodeService.retrievePostcodesFor(initialPostcodeQuery);
 
@@ -102,5 +110,4 @@ public class SSRController {
             log.error("Failed to serialize image posts", e);
         }
     }
-
 }
