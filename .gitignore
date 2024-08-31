@@ -1,4 +1,11 @@
 /node_modules
+.idea/
+.gradle/
+build/
+
+**/*.bundle.js
+**/*.bundle.mjs
+**/*.bundle.mjs.LICENSE.txt
 
 react-build
 src/main/resources/public

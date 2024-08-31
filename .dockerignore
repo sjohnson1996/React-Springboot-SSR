@@ -1,2 +1,8 @@
+# Ignore everything by default
 *
+
+# Allow the necessary files for Docker
+!package.json
+!package-lock.json
 !build/libs/app.jar
+!src/**         # If you need to copy the source code
