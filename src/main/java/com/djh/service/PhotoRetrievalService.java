@@ -1,8 +1,8 @@
 package com.djh.service;
 
+import com.djh.accessor.RestTemplateAccessor;
 import com.djh.representation.Photo;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,15 +10,15 @@ import java.util.List;
 @Service
 public class PhotoRetrievalService {
 
-    private final RestTemplate restTemplate;
+    private final RestTemplateAccessor restTemplateAccessor;
 
-    public PhotoRetrievalService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public PhotoRetrievalService(RestTemplateAccessor restTemplateAccessor) {
+        this.restTemplateAccessor = restTemplateAccessor;
     }
 
     public List<Photo> retrieveAllPhotos() {
         String url = "https://jsonplaceholder.typicode.com/photos";
-        Photo[] photos = restTemplate.getForObject(url, Photo[].class);
+        Photo[] photos = restTemplateAccessor.getRestTemplate().getForObject(url, Photo[].class);
         return Arrays.asList(photos);
     }
 }
