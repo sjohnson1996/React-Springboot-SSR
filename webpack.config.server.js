@@ -3,20 +3,15 @@ const path = require('path');
 module.exports = {
     mode: 'production',
     entry: {
-        // Define entry points for different bundles
-        foo: [
-            'core-js/stable', // Polyfill modern JavaScript features
-            'regenerator-runtime/runtime', // Polyfill async/await and generators
-            'web-encoding', // Polyfill for TextEncoder and TextDecoder
-            './src/main/resources/foo.js' // Your main entry point
-        ],
-        webEncodingPolyfill: './src/main/resources/webEncodingPolyfill.js', // Another entry point
+        foo: './src/main/resources/foo.js',
+        webEncodingPolyfill: './src/main/resources/webEncodingPolyfill.js',
+        renderPhotoGallery: './src/main/resources/renderers/renderPhotoGallery.js',
     },
-    target: ['web', 'es2020'], // Target the web and ES2020
+    target: ['web', 'es2020'],
     output: {
-        path: path.resolve(__dirname, 'src/main/resources'),
-        filename: '[name].bundle.mjs', // Output multiple bundles based on entry point names
-        libraryTarget: 'module', // Output as ESModules
+        path: path.resolve(__dirname, 'src/main/resources/build'),
+        filename: '[name].bundle.mjs', // All files go directly into the build folder
+        libraryTarget: 'module',
         module: true,
         chunkFormat: 'module',
     },

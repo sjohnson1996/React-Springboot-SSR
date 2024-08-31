@@ -55,7 +55,7 @@ public class SSRController {
                     .build();
 
             // Load and evaluate the polyfills script once
-            String polyfillsSrc = Files.readString(Paths.get("./src/main/resources/webEncodingPolyfill.bundle.mjs"));
+            String polyfillsSrc = Files.readString(Paths.get("./src/main/resources/build/webEncodingPolyfill.bundle.mjs"));
             context.eval(Source.newBuilder("js", polyfillsSrc, "polyfills.js").build());
         } catch (Exception e) {
             log.error("Failed to initialize GraalVM context", e);
@@ -63,7 +63,7 @@ public class SSRController {
     }
 
     @GetMapping("/{path:(?!.*.js|.*.css|.*.jpg).*$}")
-    public String render(Model model, HttpServletRequest request) {
+    public String renderPhotoGallery(Model model, HttpServletRequest request) {
         List<Photo> photos = photoRetrievalService.retrieveAllPhotos();
 
         try {
@@ -74,8 +74,8 @@ public class SSRController {
             model.addAttribute("photos", photosJson);
 
             // JavaScript code to import the renderToString function and call it with the photos data
-            String src = "import { renderToString } from './src/main/resources/foo.bundle.mjs';" +
-                    "const result = renderToString({ photos: " + photosJson + " }); result;";
+            String src = "import { renderPhotoGallery } from './src/main/resources/build/renderPhotoGallery.bundle.mjs';" +
+                    "const result = renderPhotoGallery({ photos: " + photosJson + " }); result;";
 
             // Execute the JavaScript code and get the result using the shared context
             Value result = context.eval(Source.newBuilder("js", src, "test.mjs").build());
