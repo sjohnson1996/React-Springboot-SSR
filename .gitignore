@@ -6,6 +6,8 @@ build/
 **/*.bundle.js
 **/*.bundle.mjs
 **/*.bundle.mjs.LICENSE.txt
+**/*bundle.js.map
+**/*bundle.js.LICENSE.txt
 
 react-build
 src/main/resources/public
