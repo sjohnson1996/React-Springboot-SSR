@@ -1,10 +1,7 @@
-package com.djh;
+package com.djh.controller;
 
-import com.djh.postcode.Postcode;
-import com.djh.postcode.PostcodeService;
 import com.djh.representation.Photo;
 import com.djh.service.PhotoRetrievalService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
@@ -16,31 +13,23 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-/**
- * @author David Hancock
- */
 @Controller
 public class SSRController {
 
     private static final Logger log = LoggerFactory.getLogger(SSRController.class);
 
     private final PhotoRetrievalService photoRetrievalService;
-    private final PostcodeService postcodeService;
     private final ObjectMapper objectMapper;
 
     // Shared Context for GraalVM
     private Context context;
 
-    public SSRController(PhotoRetrievalService photoRetrievalService, PostcodeService postcodeService, ObjectMapper objectMapper) {
+    public SSRController(PhotoRetrievalService photoRetrievalService, ObjectMapper objectMapper) {
         this.photoRetrievalService = photoRetrievalService;
-        this.postcodeService = postcodeService;
         this.objectMapper = objectMapper;
     }
 
@@ -63,12 +52,10 @@ public class SSRController {
     }
 
     @GetMapping("/{path:(?!.*.js|.*.css|.*.jpg).*$}")
-    public String renderPhotoGallery(Model model, HttpServletRequest request) {
+    public String renderPhotoGallery(Model model) {
         List<Photo> photos = photoRetrievalService.retrieveAllPhotos();
 
         try {
-            // Convert the list of photos to JSON
-            ObjectMapper objectMapper = new ObjectMapper();
             String photosJson = objectMapper.writeValueAsString(photos);
 
             model.addAttribute("photos", photosJson);
@@ -91,35 +78,6 @@ public class SSRController {
             log.error("Error executing script", e);
         }
 
-        addCurrentPath(model, request);
-        addServerSideContent(model);
-        model.addAttribute("title", "Server Side Rendered React Application");
         return "index";
-    }
-
-    private void addCurrentPath(Model model, HttpServletRequest request) {
-        String path = request.getServletPath();
-        if (request.getServletPath().equals("/index.html")) {
-            path = "/";
-        }
-
-        if (request.getQueryString() != null) {
-            path = String.format("%s?%s", path, request.getQueryString());
-        }
-        model.addAttribute("currentPath", path);
-    }
-
-    private void addServerSideContent(Model model) {
-        String initialPostcodeQuery = "ST3";
-        List<Postcode> postcodes = postcodeService.retrievePostcodesFor(initialPostcodeQuery);
-
-        Map<String, Object> serverSideState = new HashMap<>();
-        serverSideState.put("postcodeQuery", initialPostcodeQuery);
-        serverSideState.put("postcodes", postcodes);
-        try {
-            model.addAttribute("serverSideState", objectMapper.writeValueAsString(serverSideState));
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize image posts", e);
-        }
     }
 }
