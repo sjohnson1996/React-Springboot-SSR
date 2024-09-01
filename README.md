@@ -45,8 +45,8 @@ docker run -p8080:8080 test
 NOTE: Refer to the build.gradle file for a Spring Boot package Gotcha.
 
 
-The JS code is split into two main bundles, the client.js and server.js. These are built as independent source sets
-by Webpack. Both the server.js and client.js depend upon the the main React App itself with the only difference being
+The JS code is split into two main bundles, the client.tsx and server.js. These are built as independent source sets
+by Webpack. Both the server.js and client.tsx depend upon the the main React App itself with the only difference being
 that the client side component includes client side specific code such as browser routing, and the server side code includes
 server side routing and injection of initial state.
 
@@ -56,7 +56,7 @@ engine.
 
 Regarding SSR, the main files of interest are:
 
-- react-src/client.js
+- react-src/client.tsx
 - react-src/server.js
 - src/main/java/com/djh/SSRController.java
 - src/main/java/com/djh/SSRConfiguration.java

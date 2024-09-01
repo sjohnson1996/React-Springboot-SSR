@@ -11,3 +11,5 @@ build/
 
 react-build
 src/main/resources/public
+
+.npmrc

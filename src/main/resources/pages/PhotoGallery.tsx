@@ -1,29 +1,34 @@
 import React, {useState} from "react";
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { NavBar } from "../components";
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
 import Pagination from 'react-bootstrap/Pagination';
 
-function PhotoGallery({ photos }) {
-    const [currentPage, setCurrentPage] = useState(1);
-    const photosPerPage = 20; // Number of photos per page
+interface Photo {
+    albumId: number;
+    id: number;
+    title: string;
+    url: string;
+    thumbnailUrl: string;
+}
 
-    // Calculate the index of the first and last photo for the current page
+function PhotoGallery({ photos }: {
+    photos: Photo[];
+}) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const photosPerPage = 20;
+
     const indexOfLastPhoto = currentPage * photosPerPage;
     const indexOfFirstPhoto = indexOfLastPhoto - photosPerPage;
     const currentPhotos = photos.slice(indexOfFirstPhoto, indexOfLastPhoto);
 
-    // Determine the total number of pages
     const totalPages = Math.ceil(photos.length / photosPerPage);
 
-    // Handle pagination click
-    const handlePageChange = (pageNumber) => {
+    const handlePageChange = (pageNumber: number) => {
         setCurrentPage(pageNumber);
     };
 
-    // Generate pagination items
     const paginationItems = [];
     for (let number = 1; number <= totalPages; number++) {
         paginationItems.push(
@@ -39,8 +44,6 @@ function PhotoGallery({ photos }) {
 
     return (
         <>
-            {/*<NavBar />*/}
-
             <Container>
                 <h2 className="mb-4">Photo Gallery</h2>
                 <Row xs={1} md={3} className="g-4">
@@ -56,7 +59,6 @@ function PhotoGallery({ photos }) {
                     ))}
                 </Row>
 
-                {/* Pagination Component */}
                 <Pagination className="mt-4 justify-content-center">
                     {paginationItems}
                 </Pagination>
@@ -65,4 +67,4 @@ function PhotoGallery({ photos }) {
     );
 }
 
-export { PhotoGallery };
+export { PhotoGallery, Photo };

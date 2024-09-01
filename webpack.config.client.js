@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
     mode: 'production', // or 'development' depending on your environment
-    entry: './src/main/resources/static/client.js', // Adjust this path to where your client-side JS file is located
+    entry: './src/main/resources/static/client.tsx', // Adjust the entry point to TypeScript/TSX file
     output: {
         path: path.resolve(__dirname, 'src/main/resources/static'), // Output the bundled file to your static folder
         filename: 'client.bundle.js', // Name of the bundled output file
@@ -11,12 +11,12 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.jsx?$/, // Match JavaScript and JSX files
+                test: /\.(js|jsx|ts|tsx)$/, // Match JavaScript, JSX, TypeScript, and TSX files
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['@babel/preset-env', '@babel/preset-react'], // Transpile ES6+ and JSX
+                        presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'], // Add TypeScript support
                     },
                 },
             },
@@ -27,7 +27,7 @@ module.exports = {
         ],
     },
     resolve: {
-        extensions: ['.js', '.jsx'], // Resolve both JS and JSX extensions
+        extensions: ['.js', '.jsx', '.ts', '.tsx'], // Resolve JS, JSX, TS, and TSX extensions
     },
     devtool: 'source-map', // Optional: Generate source maps for easier debugging
 };
